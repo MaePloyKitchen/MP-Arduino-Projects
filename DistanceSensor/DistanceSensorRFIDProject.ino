@@ -26,13 +26,12 @@ void setup() {
 }
 
 void loop() {
-  // 1. TAKING MULTIPLE MEASUREMENTS AND STORE IN AN ARRAY
+  // Following code is used to limit interference with the sensor
   for (int sample = 0; sample < 20; sample++) {
     filterArray[sample] = ultrasonicMeasure();
     delay(30); // to avoid untrasonic interfering
   }
 
-  // 2. SORTING THE ARRAY IN ASCENDING ORDER
   for (int i = 0; i < 19; i++) {
     for (int j = i + 1; j < 20; j++) {
       if (filterArray[i] > filterArray[j]) {
@@ -43,11 +42,6 @@ void loop() {
     }
   }
 
-  // 3. FILTERING NOISE
-  // + the five smallest samples are considered as noise -> ignore it
-  // + the five biggest  samples are considered as noise -> ignore it
-  // ----------------------------------------------------------------
-  // => get average of the 10 middle samples (from 5th to 14th)
   double sum = 0;
   for (int sample = 5; sample < 15; sample++) {
     sum += filterArray[sample];
@@ -55,9 +49,11 @@ void loop() {
 
   distance = sum / 10;
 
-  // print the value to Serial Monitor
+  // print the value to Serial Monitor. This is what the polling program will see to track the distance
   Serial.println(distance);
 
+  //This code is for the RFID tag. Currently, there is a tiny delay when the card is near the reader so keep that in mind
+  
   if (rfid.PICC_IsNewCardPresent()) { // new tag is available
     if (rfid.PICC_ReadCardSerial()) { // NUID has been readed
       MFRC522::PICC_Type piccType = rfid.PICC_GetType(rfid.uid.sak);
